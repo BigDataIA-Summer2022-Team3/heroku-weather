@@ -1,0 +1,5 @@
+2022-08-17 17:01:44,296 loglevel=INFO   /
+2022-08-17 17:01:44,369 loglevel=INFO   /favicon.ico
+2022-08-17 17:01:52,657 loglevel=INFO   /today/weather
+2022-08-17 17:02:14,312 loglevel=INFO   /db/record/today
+2022-08-17 17:02:14,313 loglevel=ERROR  Failed to save weather data at 2022-08-17T16:00:00
