@@ -2,7 +2,7 @@ import pymysql
 import os
 # from functions.dbconfig import funct
 
-def save_params_into_db(id, tdatetime, precipitation, temp_max, temp_min, wind, real_weather):
+def save_params_into_db(key_id, tdatetime, precipitation, temp_max, temp_min, wind, real_weather):
     # 上传数据到本地库
     # Host, User, Password = funct()
     Host = os.environ['Host']
@@ -10,7 +10,7 @@ def save_params_into_db(id, tdatetime, precipitation, temp_max, temp_min, wind, 
     Password = os.environ['Password']
     con = pymysql.connect(host = Host, user = User, password = Password, database = 'damg', charset = "utf8")
     c = con.cursor()
-    id = id + "-airflow"
+    key_id = key_id + "-airflow"
     
     precipitation = float(precipitation)
     temp_max = float(temp_max)
@@ -19,7 +19,7 @@ def save_params_into_db(id, tdatetime, precipitation, temp_max, temp_min, wind, 
 
     sql = "insert into seattle_weather (id, date, precipitation, temp_max, temp_min, wind, real_weather)\
                 values('%s','%s','%f','%f','%f','%f','%s')" % \
-                (id, tdatetime, precipitation, temp_max, temp_min, wind, real_weather)
+                (key_id, tdatetime, precipitation, temp_max, temp_min, wind, real_weather)
     
     try: 
         print("Prepare to insert")
