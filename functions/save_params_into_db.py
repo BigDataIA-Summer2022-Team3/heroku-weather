@@ -10,7 +10,7 @@ def save_params_into_db(id, tdatetime, precipitation, temp_max, temp_min, wind, 
     Password = os.environ['Password']
     con = pymysql.connect(host = Host, user = User, password = Password, database = 'damg', charset = "utf8")
     c = con.cursor()
-    id = id + "-a"
+    id = id + "-airflow"
     
     precipitation = float(precipitation)
     temp_max = float(temp_max)
