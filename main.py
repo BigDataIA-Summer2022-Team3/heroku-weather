@@ -11,6 +11,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 # from passlib.context import CryptContext
 from pydantic import BaseModel
 from fastapi import FastAPI
+from functions.get_past_one_week_weather import get_past_one_week_weather
 from functions.get_today_weather_param import get_today_weather_param
 from functions.save_params_into_db import save_params_into_db
 
@@ -195,6 +196,15 @@ async def Load_today_weather_params():
     # logger.info(f"User {current_user.username} load current weather data at {tdatetime}")
     
     return result;
+
+
+@app.get("/last7days/weather")
+async def Get_last_one_week_weather():
+    try:
+        result = get_past_one_week_weather()
+    except Exception as e:
+        logger.warning(e)
+    return result
 
 
 @app.post("/db/record/today")
