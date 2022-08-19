@@ -14,6 +14,7 @@ from fastapi import FastAPI
 from functions.get_weather_in_5_days import get_weather_in_5_days
 from functions.get_past_one_week_weather import get_past_one_week_weather
 from functions.get_today_weather_param import get_today_weather_param
+from functions.load_history_weather import load_history_weather
 from functions.save_params_into_db import save_params_into_db
 
 logging.config.fileConfig('log/logging.conf')
@@ -234,6 +235,18 @@ async def Get_and_Predict_weather_in_5_days(current_user: User = Depends(get_cur
     except Exception as e:
         logger.warning(e)
     return result
+
+
+@app.get("/history")
+async def Load_history_weather_in_one_year(input_year:int):
+    try:
+        result = load_history_weather(input_year)
+        date = datetime.today() 
+        logger.info(f"{date} Load history weather in year {input_year}")
+    except Exception as e:
+        logger.warning(e)
+    return result
+
 
 @app.get("/test/weather")
 async def Get_last_one_week_weather():
