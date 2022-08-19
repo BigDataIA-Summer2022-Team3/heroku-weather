@@ -15,7 +15,7 @@ def load_history_weather(input_year):
     c = con.cursor()
 
     sql = "select DATE_FORMAT(date,'%%Y-%%m-%%d') dates, DATE_FORMAT(date,'%%m') months,precipitation,temp_max,temp_min,wind \
-    from seattle_weather where year(date) = '%d'" % (2018)
+    from seattle_weather where year(date) = '%d'" % (input_year)
 
     try: 
         
