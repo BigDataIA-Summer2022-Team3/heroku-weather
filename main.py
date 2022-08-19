@@ -215,8 +215,10 @@ async def Load_today_weather_params():
 
 
 @app.get("/last7days/weather")
-async def Get_last_one_week_weather():
+async def Get_last_one_week_weather(current_user: User = Depends(get_current_active_user)):
     try:
+        date = datetime.today()
+        logger.info(f"User {current_user} retrieve past one week weather at {date}")
         result = get_past_one_week_weather()
     except Exception as e:
         logger.warning(e)
@@ -224,15 +226,32 @@ async def Get_last_one_week_weather():
 
 
 @app.get("/predict/5days")
-async def Get_and_Predict_weather_in_5_days():
+async def Get_and_Predict_weather_in_5_days(current_user: User = Depends(get_current_active_user)):
     try:
         result = get_weather_in_5_days()
-        date = datetime.today() 
-        logger.info(f"Get weather in 5 days at {date}")
+        date = datetime.today()
+        logger.info(f"User {current_user} get predicted weather in 5 days at {date}")
     except Exception as e:
         logger.warning(e)
     return result
 
+@app.get("/test/weather")
+async def Get_last_one_week_weather():
+    try:
+        result = get_past_one_week_weather()
+        date = datetime.today()
+
+    except Exception as e:
+        logger.warning(e)
+    return result
+
+@app.get("/test/5days")
+async def Get_and_Predict_weather_in_5_days():
+    try:
+        result = get_weather_in_5_days()
+    except Exception as e:
+        logger.warning(e)
+    return result
 
 # if __name__ == "__main__":
 #     uvicorn.run(app, host="0.0.0.0", port=8000)

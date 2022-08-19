@@ -9,3 +9,6 @@
 2022-08-18 21:26:44,272 loglevel=INFO   Get weather in 5 days at 2022-08-18 21:26:44.272135
 2022-08-18 21:27:45,554 loglevel=INFO   /predict/5days
 2022-08-18 21:27:45,959 loglevel=INFO   Get weather in 5 days at 2022-08-18 21:27:45.959563
+2022-08-18 21:35:26,192 loglevel=INFO   /predict/5days
+2022-08-18 21:36:23,860 loglevel=INFO   /predict/5days
+2022-08-18 21:36:29,860 loglevel=INFO   /test/5days
