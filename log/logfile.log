@@ -3,3 +3,9 @@
 2022-08-17 17:01:52,657 loglevel=INFO   /today/weather
 2022-08-17 17:02:14,312 loglevel=INFO   /db/record/today
 2022-08-17 17:02:14,313 loglevel=ERROR  Failed to save weather data at 2022-08-17T16:00:00
+2022-08-18 21:25:02,085 loglevel=INFO   /predict/5days
+2022-08-18 21:25:02,552 loglevel=INFO   Get weather in 5 days at 2022-08-18 21:25:02.552600
+2022-08-18 21:26:43,787 loglevel=INFO   /predict/5days
+2022-08-18 21:26:44,272 loglevel=INFO   Get weather in 5 days at 2022-08-18 21:26:44.272135
+2022-08-18 21:27:45,554 loglevel=INFO   /predict/5days
+2022-08-18 21:27:45,959 loglevel=INFO   Get weather in 5 days at 2022-08-18 21:27:45.959563

@@ -7,10 +7,11 @@ from datetime import datetime, timedelta
 from typing import Union
 from fastapi import Depends, FastAPI, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-# from jose import JWTError, jwt
-# from passlib.context import CryptContext
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 from pydantic import BaseModel
 from fastapi import FastAPI
+from functions.get_weather_in_5_days import get_weather_in_5_days
 from functions.get_past_one_week_weather import get_past_one_week_weather
 from functions.get_today_weather_param import get_today_weather_param
 from functions.save_params_into_db import save_params_into_db
@@ -83,101 +84,116 @@ class UserInDB(User):
     hashed_password: str
 
 
-# pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app = FastAPI()
 
 
-# def verify_password(plain_password, hashed_password):
-#     return pwd_context.verify(plain_password, hashed_password)
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
 
 
-# def get_password_hash(password):
-#     return pwd_context.hash(password)
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
 
-# def get_user(db, username: str):
-#     if username in db:
-#         user_dict = db[username]
-#         return UserInDB(**user_dict)
+def get_user(db, username: str):
+    if username in db:
+        user_dict = db[username]
+        return UserInDB(**user_dict)
 
 
-# def authenticate_user(fake_db, username: str, password: str):
-#     user = get_user(fake_db, username)
-#     if not user:
-#         return False
-#     if not verify_password(password, user.hashed_password):
-#         return False
-#     return user
+def authenticate_user(fake_db, username: str, password: str):
+    user = get_user(fake_db, username)
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
 
 
-# def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
-#     to_encode = data.copy()
-#     if expires_delta:
-#         expire = datetime.utcnow() + expires_delta
-#     else:
-#         expire = datetime.utcnow() + timedelta(minutes=15)
-#     to_encode.update({"exp": expire})
-#     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-#     return encoded_jwt
+def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
 
-# async def get_current_user(token: str = Depends(oauth2_scheme)):
-#     credentials_exception = HTTPException(
-#         status_code=status.HTTP_401_UNAUTHORIZED,
-#         detail="Could not validate credentials",
-#         headers={"WWW-Authenticate": "Bearer"},
-#     )
-#     try:
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         username: str = payload.get("sub")
-#         if username is None:
-#             raise credentials_exception
-#         token_data = TokenData(username=username)
-#     except JWTError:
-#         raise credentials_exception
-#     user = get_user(users_db, username=token_data.username)
-#     if user is None:
-#         raise credentials_exception
-#     return user
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except JWTError:
+        raise credentials_exception
+    user = get_user(users_db, username=token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
 
 
-# async def get_current_active_user(current_user: User = Depends(get_current_user)):
-#     if current_user.disabled:
-#         raise HTTPException(status_code=400, detail="Inactive user")
-#     return current_user
+async def get_current_active_user(current_user: User = Depends(get_current_user)):
+    if current_user.disabled:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
 
 
-# @app.post("/token", response_model=Token)
-# async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-#     user = authenticate_user(users_db, form_data.username, form_data.password)
-#     if not user:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Incorrect username or password",
-#             headers={"WWW-Authenticate": "Bearer"},
-#         )
-#     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-#     access_token = create_access_token(
-#         data={"sub": user.username}, expires_delta=access_token_expires
-#     )
-#     return {"access_token": access_token, "token_type": "bearer"}
+@app.post("/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(users_db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.post("/db/record/today")
+async def Store_today_weather(key_id: str, tdatetime: str, precipitation: str, 
+                    temp_max: str, temp_min: str, wind: str, real_weather: str,
+                    
+                    ):
+    try:
+        save_params_into_db(key_id, tdatetime, precipitation, temp_max, temp_min, wind, real_weather)
+    except Exception as e:
+        logger.error(f"Failed to save weather data at {tdatetime}")
+        print(e)
+        return {"error": "Failed to saving weather record"}
+
+    logger.info(f"Save weather data at {tdatetime}")  
 
 
 @app.get('/')
 async def welcome():
     return {"Team3": "Welcome to Lookout APi on Docker"}
 
-# @app.get("/users/me/", response_model=User)
-# async def read_users_me(current_user: User = Depends(get_current_active_user)):
-#     return current_user
+@app.get("/users/me/", response_model=User)
+async def read_users_me(current_user: User = Depends(get_current_active_user)):
+    return current_user
 
 
-# @app.get("/users/me/items/")
-# async def read_own_items(current_user: User = Depends(get_current_active_user)):
-#     return [{"item_id": "Foo", "owner": current_user.username}]
+@app.get("/users/me/items/")
+async def read_own_items(current_user: User = Depends(get_current_active_user)):
+    return [{"item_id": "Foo", "owner": current_user.username}]
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -207,24 +223,16 @@ async def Get_last_one_week_weather():
     return result
 
 
-@app.post("/db/record/today")
-async def Store_today_weather(key_id: str, tdatetime: str, precipitation: str, 
-                    temp_max: str, temp_min: str, wind: str, real_weather: str,
-                    
-                    ):
+@app.get("/predict/5days")
+async def Get_and_Predict_weather_in_5_days():
     try:
-        save_params_into_db(key_id, tdatetime, precipitation, temp_max, temp_min, wind, real_weather)
+        result = get_weather_in_5_days()
+        date = datetime.today() 
+        logger.info(f"Get weather in 5 days at {date}")
     except Exception as e:
-        logger.error(f"Failed to save weather data at {tdatetime}")
-        print(e)
-        return {"error": "Failed to saving weather record"}
+        logger.warning(e)
+    return result
 
-    # logger.info(f"User {current_user.username} save weather data at {tdatetime}")  
-
-# @app.get("/db/record")
-# async def Store_today_weather(current_user: User = Depends(get_current_active_user)):
-
-#     return 
 
 # if __name__ == "__main__":
 #     uvicorn.run(app, host="0.0.0.0", port=8000)
