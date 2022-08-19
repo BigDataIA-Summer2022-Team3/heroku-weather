@@ -238,11 +238,11 @@ async def Get_and_Predict_weather_in_5_days(current_user: User = Depends(get_cur
 
 
 @app.get("/history")
-async def Load_history_weather_in_one_year(input_year:int):
+async def Load_history_weather_in_one_year(input_year:int, current_user: User = Depends(get_current_active_user)):
     try:
         result = load_history_weather(input_year)
         date = datetime.today() 
-        logger.info(f"{date} Load history weather in year {input_year}")
+        logger.info(f"{date}: User {current_user} load history weather in year {input_year}")
     except Exception as e:
         logger.warning(e)
     return result
